@@ -1,16 +1,14 @@
-app.controller('productController', function($scope, apiService){
-    $scope.products=[]; $scope.filteredProducts=[];
-    $scope.searchText=""; $scope.minPrice=0; $scope.maxPrice=100000;
+angular.module('FarmApp')
+.controller('productController', function($scope, cartService) {
+    // Example products, replace with API call if needed
+    $scope.products = [
+        {id:1, name:'Apple', price:50},
+        {id:2, name:'Banana', price:20},
+        {id:3, name:'Orange', price:30}
+    ];
 
-    apiService.getProducts({}).then(r=>{
-        $scope.products=r.data.products;
-        $scope.filteredProducts=$scope.products;
-    });
-
-    $scope.filterProducts=function(){
-        $scope.filteredProducts=$scope.products.filter(p=>
-            p.name.toLowerCase().includes($scope.searchText.toLowerCase()) &&
-            p.price >= $scope.minPrice && p.price <= $scope.maxPrice
-        );
-    }
+    $scope.addToCart = function(product) {
+        cartService.addToCart(product);
+        alert(product.name + ' added to cart!');
+    };
 });

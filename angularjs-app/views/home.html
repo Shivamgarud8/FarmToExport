@@ -1,13 +1,10 @@
-	<h2>Welcome to FarmToExport</h2>
-<p>Explore the best agricultural products from farmers near you!</p>
-
-<div ng-controller="homeController">
-<h3>Featured Products</h3>
-<div class="product-card" ng-repeat="product in products">
-<img ng-src="images/{{product.image}}" alt="{{product.name}}">
-<h4>{{product.name}}</h4>
-<p>Price: ₹{{product.price}}</p>
-<a href="#!/product/{{product.id}}">View Details</a>
+<div>
+    <h2>Products</h2>
+    <div ng-repeat="product in products">
+        <h3>{{product.name}} - ₹{{product.price}}</h3>
+        <p>{{product.description}}</p>
+        <p>Stock: {{product.stock}}</p>
+        <button ng-click="addToCart(product)">Add to Cart</button>
+        <hr>
+    </div>
 </div>
-</div>
-

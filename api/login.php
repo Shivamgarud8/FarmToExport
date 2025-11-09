@@ -1,4 +1,6 @@
-k<?php
+<?php
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json; charset=UTF-8");
 include 'db.php';
 $data = json_decode(file_get_contents("php://input"), true);
 $email = $data['email'];

@@ -1,4 +1,4 @@
-kapp.service('apiService', function($http){
+app.service('apiService', function($http){
     var baseUrl = 'http://13.233.134.21/FarmToExport/api/'; // server IP
 
     // User APIs

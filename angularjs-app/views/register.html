@@ -1,14 +1,12 @@
-<div ng-controller="registerController">
-<h2>Register</h2>
-<form ng-submit="register()">
-    <input type="text" ng-model="user.name" placeholder="Name" required>
-    <input type="email" ng-model="user.email" placeholder="Email" required>
-    <input type="password" ng-model="user.password" placeholder="Password" required>
-    <select ng-model="user.role">
-        <option value="exporter">Exporter</option>
-        <option value="farmer">Farmer</option>
-    </select>
-    <button type="submit">Register</button>
-</form>
-<p>{{message}}</p>
+<div>
+    <h2>Register</h2>
+    <form ng-submit="register()">
+        <label>Name:</label>
+        <input type="text" ng-model="newUser.name" required><br>
+        <label>Email:</label>
+        <input type="email" ng-model="newUser.email" required><br>
+        <label>Password:</label>
+        <input type="password" ng-model="newUser.password" required><br>
+        <button type="submit">Register</button>
+    </form>
 </div>
