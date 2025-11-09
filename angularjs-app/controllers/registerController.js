@@ -1,9 +1,9 @@
 FarmToExport.controller('registerController', function($scope) {
     $scope.register = function() {
         if($scope.username && $scope.email && $scope.password){
-            alert("Registered successfully: " + $scope.username);
+            alert("Registered successfully!\nUsername: " + $scope.username + "\nEmail: " + $scope.email);
         } else {
-            alert("Fill all registration fields!");
+            alert("Please fill all registration fields!");
         }
     };
 });
