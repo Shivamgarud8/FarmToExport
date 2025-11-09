@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html ng-app="farmApp">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FarmToExport</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+<script src="js/chart.min.js"></script>
+<script src="app.js"></script>
+<script src="services/apiService.js"></script>
+<script src="controllers/homeController.js"></script>
+<script src="controllers/productController.js"></script>
+<script src="controllers/productDetailController.js"></script>
+<script src="controllers/loginController.js"></script>
+<script src="controllers/registerController.js"></script>
+<script src="controllers/cartController.js"></script>
+<script src="controllers/adminController.js"></script>
+</head>
+<body>
+<header>
+<div class="container">
+<h1><a href="#!/">FarmToExport</a></h1>
+<nav>
+<ul>
+<li><a href="#!/">Home</a></li>
+<li><a href="#!/products">Products</a></li>
+<li><a href="#!/about">About</a></li>
+<li><a href="#!/contact">Contact</a></li>
+<li><a href="#!/cart">Cart (<span ng-bind="cartCount || 0"></span>)</a></li>
+<li><a href="#!/login">Login</a></li>
+<li><a href="#!/register">Register</a></li>
+</ul>
+</nav>
+</div>
+</header>
+
+<main>
+<div class="container" ng-view></div>
+</main>
+
+<footer>
+<div class="container">
+<p>&copy; 2025 FarmToExport. All Rights Reserved.</p>
+<ul>
+<li><a href="#!/terms">Terms</a></li>
+<li><a href="#!/privacy">Privacy</a></li>
+</ul>
+</div>
+</footer>
+</body>
+</html>
