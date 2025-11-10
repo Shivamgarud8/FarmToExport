@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SSH_CRED    = 'node-cred'              // Jenkins SSH credential ID
-        SERVER_IP   = '13.233.134.21'          // Server Public IP
+        SERVER_IP   = '13.53.70.69'          // Server Public IP
         REMOTE_USER = 'ubuntu'                 // Remote user
         APP_DIR     = '/var/www/html/FarmToExport/angularjs-app'
         REPO_URL    = 'https://github.com/Shivamgarud8/FarmToExport.git'
