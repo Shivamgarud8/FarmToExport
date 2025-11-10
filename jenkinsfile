@@ -1,0 +1,104 @@
+pipeline {
+    agent any
+
+    environment {
+        SSH_CRED    = 'node-cred'              // Jenkins SSH credential ID
+        SERVER_IP   = '13.233.134.21'          // Server Public IP
+        REMOTE_USER = 'ubuntu'                 // Remote user
+        APP_DIR     = '/var/www/html/FarmToExport/angularjs-app'
+        REPO_URL    = 'https://github.com/Shivamgarud8/FarmToExport.git'
+    }
+
+    stages {
+
+        stage('Clone Repository') {
+            steps {
+                echo '📦 Cloning AngularJS FarmToExport repository...'
+                git url: "${REPO_URL}", branch: 'main'
+            }
+        }
+
+        stage('Transfer Files to Server') {
+            steps {
+                echo '🚀 Copying project files to remote server...'
+                sshagent(credentials: ["${SSH_CRED}"]) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} "
+                            sudo mkdir -p ${APP_DIR} &&
+                            sudo chown -R ${REMOTE_USER}:${REMOTE_USER} /var/www/html
+                        "
+
+                        scp -o StrictHostKeyChecking=no -r * ${REMOTE_USER}@${SERVER_IP}:${APP_DIR}/
+                    '''
+                }
+            }
+        }
+
+        stage('Setup Apache Environment') {
+            steps {
+                echo '⚙️ Installing Apache, Git, and NodeJS environment...'
+                sshagent(credentials: ["${SSH_CRED}"]) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} "
+                            sudo apt update -y &&
+                            sudo apt install -y apache2 git &&
+                            sudo systemctl enable apache2 &&
+                            sudo systemctl start apache2 &&
+
+                            # Optional: Install NodeJS if you plan to add backend later
+                            sudo apt install -y nodejs npm || true &&
+
+                            sudo chmod -R 755 /var/www/html &&
+                            sudo chown -R www-data:www-data /var/www/html
+                        "
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy AngularJS App') {
+            steps {
+                echo '🌐 Deploying FarmToExport web app...'
+                sshagent(credentials: ["${SSH_CRED}"]) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} "
+                            sudo rm -rf /var/www/html/FarmToExport &&
+                            sudo mkdir -p /var/www/html/FarmToExport &&
+                            sudo cp -r ${APP_DIR}/ /var/www/html/FarmToExport/ &&
+                            sudo systemctl restart apache2
+                        "
+                    '''
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                echo '🔍 Verifying that the website is live...'
+                sshagent(credentials: ["${SSH_CRED}"]) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} "
+                            if sudo systemctl status apache2 | grep active; then
+                                echo '✅ Apache is running properly.'
+                            else
+                                echo '❌ Apache service not running!'
+                            fi
+                        "
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '🎉 FarmToExport AngularJS app deployed successfully!'
+            echo '🌍 Your application is live at:'
+            echo '👉 http://13.233.134.21/FarmToExport/angularjs-app/#!/'
+        }
+
+        failure {
+            echo '❌ Deployment failed! Please check Jenkins logs or server configuration.'
+        }
+    }
+}
