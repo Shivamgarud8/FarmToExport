@@ -3,9 +3,10 @@ pipeline {
 
     environment {
         SSH_CRED    = 'node-cred'              // Jenkins SSH credential ID
-        SERVER_IP   = '13.53.70.69'          // Server Public IP
-        REMOTE_USER = 'ubuntu'                 // Remote user
-        APP_DIR     = '/var/www/html/FarmToExport/angularjs-app'
+        SERVER_IP   = '13.53.70.69'            // Update to your actual EC2 IP
+        REMOTE_USER = 'ubuntu'
+        WEB_ROOT    = '/var/www/html'
+        APP_NAME    = 'FarmToExport'
         REPO_URL    = 'https://github.com/Shivamgarud8/FarmToExport.git'
     }
 
@@ -13,7 +14,7 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                echo '📦 Cloning AngularJS FarmToExport repository...'
+                echo '📦 Cloning FarmToExport repository...'
                 git url: "${REPO_URL}", branch: 'main'
             }
         }
@@ -24,11 +25,11 @@ pipeline {
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} "
-                            sudo mkdir -p ${APP_DIR} &&
-                            sudo chown -R ${REMOTE_USER}:${REMOTE_USER} /var/www/html
+                            sudo mkdir -p ${WEB_ROOT}/${APP_NAME} &&
+                            sudo chown -R ${REMOTE_USER}:${REMOTE_USER} ${WEB_ROOT}/${APP_NAME}
                         "
 
-                        scp -o StrictHostKeyChecking=no -r * ${REMOTE_USER}@${SERVER_IP}:${APP_DIR}/
+                        scp -o StrictHostKeyChecking=no -r * ${REMOTE_USER}@${SERVER_IP}:${WEB_ROOT}/${APP_NAME}/
                     '''
                 }
             }
@@ -36,7 +37,7 @@ pipeline {
 
         stage('Setup Apache Environment') {
             steps {
-                echo '⚙️ Installing Apache, Git, and NodeJS environment...'
+                echo '⚙️ Setting up Apache...'
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} "
@@ -45,11 +46,8 @@ pipeline {
                             sudo systemctl enable apache2 &&
                             sudo systemctl start apache2 &&
 
-                            # Optional: Install NodeJS if you plan to add backend later
-                            sudo apt install -y nodejs npm || true &&
-
-                            sudo chmod -R 755 /var/www/html &&
-                            sudo chown -R www-data:www-data /var/www/html
+                            sudo chmod -R 755 ${WEB_ROOT}/${APP_NAME} &&
+                            sudo chown -R www-data:www-data ${WEB_ROOT}/${APP_NAME}
                         "
                     '''
                 }
@@ -58,13 +56,18 @@ pipeline {
 
         stage('Deploy AngularJS App') {
             steps {
-                echo '🌐 Deploying FarmToExport web app...'
+                echo '🌐 Deploying AngularJS app to Apache web root...'
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} "
-                            sudo rm -rf /var/www/html/FarmToExport &&
-                            sudo mkdir -p /var/www/html/FarmToExport &&
-                            sudo cp -r ${APP_DIR}/ /var/www/html/FarmToExport/ &&
+                            # Move to correct folder and restart Apache
+                            if [ -d ${WEB_ROOT}/${APP_NAME} ]; then
+                                echo '✅ Files found, proceeding...'
+                            else
+                                echo '❌ No app files found in ${WEB_ROOT}/${APP_NAME}'
+                                exit 1
+                            fi
+
                             sudo systemctl restart apache2
                         "
                     '''
@@ -74,14 +77,14 @@ pipeline {
 
         stage('Verify Deployment') {
             steps {
-                echo '🔍 Verifying that the website is live...'
+                echo '🔍 Verifying deployment...'
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} "
                             if sudo systemctl status apache2 | grep active; then
-                                echo '✅ Apache is running properly.'
+                                echo '✅ Apache running fine!'
                             else
-                                echo '❌ Apache service not running!'
+                                echo '❌ Apache not running!'
                             fi
                         "
                     '''
@@ -92,13 +95,13 @@ pipeline {
 
     post {
         success {
-            echo '🎉 FarmToExport AngularJS app deployed successfully!'
-            echo '🌍 Your application is live at:'
-            echo '👉 http://13.233.134.21/FarmToExport/angularjs-app/#!/'
+            echo '🎉 FarmToExport deployed successfully!'
+            echo '🌍 Your app is live at:'
+            echo '👉 http://13.53.70.69/FarmToExport/angularjs-app/#!/'
         }
 
         failure {
-            echo '❌ Deployment failed! Please check Jenkins logs or server configuration.'
+            echo '❌ Deployment failed! Please check Jenkins logs or permissions on server.'
         }
     }
 }
